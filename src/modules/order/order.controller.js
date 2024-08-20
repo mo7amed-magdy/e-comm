@@ -5,7 +5,6 @@ import { AppError } from '../../utils/appError.js';
 import { orderModel } from '../../../database/models/order.model.js';
 import { productModel } from './../../../database/models/product.model.js';
 import Stripe from 'stripe';
-const stripe = new Stripe('sk_test_51PpqFTJiPzD36UXr78e4W6VFSmTqrtRL6IxCE0bGmCr4HFjWgOi4KDAse6bW5m5yaS0pxwHdYV6s9s499h3OxDLe008c1YWIVS');
 
 
 const createCashOrder = catchError(async (req,res,next)=>{
@@ -46,10 +45,10 @@ const getAllOrders = catchError(async(req,res,next)=>{
     orders && res.json({message:'success',orders})
 })
 const createChheckOutSession = catchError(async(req,res,next)=>{
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     let cart = await cartModel.findById(req.params.id)
     if(!cart) return next(new AppError('cart not found',404))
-    let totalOrderPrice = cart.priceAfterDiscount? cart.priceAfterDiscount:cart.totalPrice
-
+    let totalOrderPrice = cart.priceAfterDiscount? cart.priceAfterDiscount:cart.totalPrice 
     let sessions = await stripe.checkout.sessions.create({
         line_items:[
             {
